@@ -1,5 +1,5 @@
 services:
-  postgres-carsautions:
+  postgres-carsauction:
     image: postgres
     environment:
       - POSTGRES_PASSWORD=postgrespw
@@ -21,4 +21,61 @@ services:
     ports:
       - 5672:5672
       - 15672:15672
+  auction-svc-carsauction:
+    image: 171717/auction-svc-carsauction:latest
+    build: 
+      context: .
+      dockerfile: src/AuctionService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMq__Host=rabbitmq
+      - ConnectionStrings__DefaultConnection=Server=postgres-carsauction:5432;User Id=postgres;Password=postgrespw;Database=carsauction
+      - IdentityServiceUrl=http://identity-svc-carsauction
+    ports:
+      - 7001:80
+    depends_on:
+      - postgres-carsauction
+      - rabbitmq
+  search-svc-carsauction:
+    image: 171717/search-svc-carsauction:latest
+    build: 
+      context: .
+      dockerfile: src/SearchService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:80
+      - RabbitMq__Host=rabbitmq
+      - ConnectionStrings__MongoDbConnection=mongodb://root:mongopw@mongodb
+      - AuctionServiceUrl=http://auction-svc-carsauction
+    ports:
+      - 7002:80
+    depends_on:
+      - mongodb
+      - rabbitmq
+  identity-svc-carsauction:
+    image: 171717/identity-svc-carsauction:latest
+    build: 
+      context: .
+      dockerfile: src/IdentityService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:80
+      - ConnectionStrings__DefaultConnection=Server=postgres-carsauction:5432;User Id=postgres;Password=postgrespw;Database=identity
+    ports:
+      - 5000:80
+    depends_on:
+      - postgres-carsauction
+  gateway-svc-carsauction:
+    image: 171717/gateway-svc-carsauction:latest
+    build: 
+      context: .
+      dockerfile: src/GatewayService/Dockerfile
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Docker
+      - ASPNETCORE_URLS=http://+:80
+    ports:
+      - 6001:80
+ 
+      
   
