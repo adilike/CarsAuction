@@ -1,3 +1,8 @@
+networks:
+  custom:
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
 services:
   postgres-carsauction:
     image: postgres
@@ -7,6 +12,8 @@ services:
       - 5432:5432
     volumes:
       - /var/lib/postresql/data
+    networks:
+      custom:
   mongodb:
     image: mongo
     environment:
@@ -16,11 +23,15 @@ services:
       - 27017:27017
     volumes:
       - /var/lib/mongodb/data
+    networks:
+      custom:
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
       - 5672:5672
       - 15672:15672
+    networks:
+      custom:
   auction-svc-carsauction:
     image: 171717/auction-svc-carsauction:latest
     build: 
@@ -43,6 +54,8 @@ services:
     depends_on:
       - postgres-carsauction
       - rabbitmq
+    networks:
+      custom:
   search-svc-carsauction:
     image: 171717/search-svc-carsauction:latest
     build: 
@@ -59,6 +72,8 @@ services:
     depends_on:
       - mongodb
       - rabbitmq
+    networks:
+      custom:
   identity-svc-carsauction:
     image: 171717/identity-svc-carsauction:latest
     build: 
@@ -69,9 +84,12 @@ services:
       - ASPNETCORE_URLS=http://+:80
       - ConnectionStrings__DefaultConnection=Server=postgres-carsauction:5432;User Id=postgres;Password=postgrespw;Database=identity
     ports:
-      - 5000:80
+      - 80:80
     depends_on:
       - postgres-carsauction
+    networks:
+      custom:
+        ipv4_address: 10.5.0.200
   gateway-svc-carsauction:
     image: 171717/gateway-svc-carsauction:latest
     build: 
@@ -82,6 +100,8 @@ services:
       - ASPNETCORE_URLS=http://+:80
     ports:
       - 6001:80
+    networks:
+      custom:
   bid-svc-carsauction:
     image: 171717/bid-svc-carsauction:latest
     build: 
@@ -99,6 +119,8 @@ services:
     depends_on:
       - mongodb
       - rabbitmq
+    networks:
+      custom:
   notify-svc-carsauction:
     image: 171717/notify-svc-carsauction:latest
     build: 
@@ -112,6 +134,28 @@ services:
       - 7004:80
     depends_on:
       - rabbitmq
+    networks:
+      custom:
+  web-app:
+    image: 171717/web-app
+    build: 
+      context: .
+      dockerfile: frontend/web-app/Dockerfile
+    volumes:
+      - /var/lib/web/data
+    ports:
+      - 3000:3000
+    extra_hosts:
+      - id.carsForauction.com:10.5.0.200
+    environment:
+      - NEXTAUTH_SECRET=somereallyreallyniceone
+      - NEXTAUTH_URL=http://localhost:3000
+      - NEXTAUTH_URL_INTERNAL=http://web-app:3000
+      - API_URL=http://gateway-svc-carsauction/
+      - ID_URL=http://id.carsForauction.com
+      - NEXT_PUBLIC_NOTIFY_URL=http://gateway-svc-carsauction/notifications
+    networks:
+      custom:
  
       
   
