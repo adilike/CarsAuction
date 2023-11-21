@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: gateway-svc-carsauction
+spec:
+  selector:
+    matchLabels:
+      app: gateway-svc-carsauction
+  template:
+    metadata:
+      labels:
+        app: gateway-svc-carsauction
+    spec:
+      containers:
+      - name: gateway-svc-carsauction
+        image: 171717/gateway-svc-carsauction
+        imagePullPolicy: Never
+        env:
+          - name: ClientApp
+            value: https://app.carsforauction.com
+          - name: IdentityServiceUrl
+            value: https://id.faab-app.com
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: gateway-clusterip
+spec:
+  type: ClusterIP
+  selector:
+    app: gateway-svc-carsauction
+  ports:
+  - port: 80
+    targetPort: 80
