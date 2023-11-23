@@ -14,7 +14,7 @@ spec:
       containers:
       - name: gateway-svc-carsauction
         image: 171717/gateway-svc-carsauction
-        imagePullPolicy: Never
+        imagePullPolicy: Always
         env:
           - name: ClientApp
             value: https://app.carsforauction.com
