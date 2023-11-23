@@ -6,13 +6,8 @@ metadata:
     name: ingress-svc
 spec:
   ingressClassName: nginx
-  tls:
-    - hosts:
-      - app.carsforauction.com
-      - api.carsforauction.com
-      secretName: carsforauction-app-tls
   rules:
-  - host: app.carsforauction.com
+  - host: app.faab-auction.com
     http:
       paths:
       - pathType: Prefix
@@ -22,7 +17,7 @@ spec:
             name: webapp-clusterip
             port: 
               number: 3000
-  - host: api.carsforauction.com
+  - host: api.faab-auction.com
     http:
       paths:
       - pathType: Prefix
