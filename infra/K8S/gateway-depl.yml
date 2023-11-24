@@ -17,7 +17,7 @@ spec:
         imagePullPolicy: Always
         env:
           - name: ClientApp
-            value: https://app.carsforauction.com
+            value: https://app.faab-auction.com
           - name: IdentityServiceUrl
             value: https://id.faab-app.com
 ---
